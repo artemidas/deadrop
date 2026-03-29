@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "deadrop",
-        "width": 800,
-        "height": 600
+        "title": "Deadrop",
+        "width": 1200,
+        "height": 800
       }
     ],
     "security": {
