@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import hljs from "highlight.js/lib/core";
 import json from "highlight.js/lib/languages/json";
 import xml from "highlight.js/lib/languages/xml";
@@ -24,6 +24,12 @@ const emit = defineEmits([
 ]);
 
 const activeTab = ref("headers");
+
+watch(() => props.method, () => {
+  if (activeTab.value === "body" && (props.method === "GET" || props.method === "HEAD")) {
+    activeTab.value = "headers";
+  }
+});
 const backdropRef = ref(null);
 
 const highlightedBody = computed(() => {
