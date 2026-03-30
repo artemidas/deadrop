@@ -36,12 +36,14 @@ function formatBody(body) {
     </div>
 
     <!-- Response Headers -->
-    <div class="space-y-1">
-      <h3 class="text-xs uppercase tracking-wide text-gray-500">Response Headers</h3>
-      <div class="text-xs font-mono space-y-0.5">
-        <div v-for="(v, k) in response.headers" :key="k" class="flex gap-2">
-          <span class="text-accent min-w-44">{{ k }}</span>
-          <span class="text-gray-500 break-all">{{ v }}</span>
+    <div tabindex="0" class="collapse collapse-arrow">
+      <div class="collapse-title px-0 text-xs uppercase tracking-wide text-gray-500">Response Headers</div>
+      <div class="collapse-content ">
+        <div class="text-xs font-mono space-y-0.5">
+          <div v-for="(v, k) in response.headers" :key="k" class="flex gap-2">
+            <span class="text-accent min-w-44">{{ k }}</span>
+            <span class="text-gray-500 break-all">{{ v }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -49,7 +51,9 @@ function formatBody(body) {
     <!-- Response Body -->
     <div class="space-y-1">
       <h3 class="text-xs uppercase tracking-wide text-gray-500">Response Body</h3>
-      <pre class="bg-bg-input border border-border-main rounded-md p-3 font-mono text-sm overflow-auto max-h-96 whitespace-pre-wrap break-words">{{ formatBody(response.body) }}</pre>
+      <pre class="bg-bg-input border border-border-main rounded-md p-3 font-mono text-sm overflow-auto max-h-96 whitespace-pre-wrap break-words">
+        {{ formatBody(response.body) }}
+      </pre>
     </div>
   </div>
 </template>
