@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import Sidebar from "./components/Sidebar.vue";
+import RequestUrlBar from "./components/RequestUrlBar.vue";
 import RequestEditor from "./components/RequestEditor.vue";
 import ResponseViewer from "./components/ResponseViewer.vue";
 import "./App.css";
@@ -135,28 +136,40 @@ function removeHeader(index) {
       @new="newRequest"
     />
 
-    <main class="flex-1 flex flex-col overflow-y-auto p-5 gap-4 bg-bg-primary">
-      <RequestEditor
+    <main class="flex-1 flex flex-col overflow-hidden p-5 gap-4 bg-bg-primary">
+      <!-- URL bar spanning full width -->
+      <RequestUrlBar
         :selectedId="selectedId"
         v-model:name="name"
         v-model:method="method"
         v-model:url="url"
-        :headers="headers"
-        v-model:body="body"
         :loading="loading"
         @save="saveRequest"
         @delete="deleteRequest"
         @send="sendRequest"
-        @update-header="updateHeader"
-        @add-header="addHeader"
-        @remove-header="removeHeader"
       />
 
-      <div v-if="error" class="alert alert-error font-mono text-sm">
+      <div v-if="error" class="alert alert-error font-mono text-sm shrink-0">
         {{ error }}
       </div>
 
-      <ResponseViewer :response="response" />
+      <!-- Split pane: request left, response right -->
+      <div class="flex-1 flex gap-4 overflow-hidden min-h-0">
+        <div class="flex-1 min-w-0 overflow-hidden">
+          <RequestEditor
+            :method="method"
+            :url="url"
+            :headers="headers"
+            v-model:body="body"
+            @update-header="updateHeader"
+            @add-header="addHeader"
+            @remove-header="removeHeader"
+          />
+        </div>
+        <div class="flex-1 min-w-0 overflow-hidden border-l border-border-main pl-4">
+          <ResponseViewer :response="response" />
+        </div>
+      </div>
     </main>
   </div>
 </template>
