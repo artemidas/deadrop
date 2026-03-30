@@ -14,6 +14,7 @@ pub struct SavedRequest {
     pub url: String,
     pub headers: HashMap<String, String>,
     pub body: Option<String>,
+    pub last_response: Option<HttpResponse>,
     pub created_at: u64,
     pub updated_at: u64,
 }
@@ -88,6 +89,7 @@ async fn create_request(
         url,
         headers,
         body,
+        last_response: None,
         created_at: now,
         updated_at: now,
     };
@@ -137,6 +139,8 @@ async fn delete_request(app: tauri::AppHandle, id: String) -> Result<bool, Strin
 
 #[tauri::command]
 async fn execute_request(
+    app: tauri::AppHandle,
+    id: Option<String>,
     method: String,
     url: String,
     headers: HashMap<String, String>,
@@ -185,14 +189,26 @@ async fn execute_request(
     let size_bytes = bytes.len();
     let body_text = String::from_utf8_lossy(&bytes).to_string();
 
-    Ok(HttpResponse {
+    let http_response = HttpResponse {
         status,
         status_text,
         headers: resp_headers,
         body: body_text,
         elapsed_ms: elapsed,
         size_bytes,
-    })
+    };
+
+    if let Some(req_id) = id {
+        if let Ok(mut store) = load_store(&app) {
+            if let Some(req) = store.requests.iter_mut().find(|r| r.id == req_id) {
+                req.last_response = Some(http_response.clone());
+                req.updated_at = now_ms();
+                let _ = save_store(&app, &store);
+            }
+        }
+    }
+
+    Ok(http_response)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

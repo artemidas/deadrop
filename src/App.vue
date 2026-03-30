@@ -37,6 +37,11 @@ function resetEditor() {
   error.value = null;
 }
 
+function newRequest() {
+  resetEditor();
+  saveRequest();
+}
+
 function selectRequest(req) {
   selectedId.value = req.id;
   name.value = req.name;
@@ -45,7 +50,7 @@ function selectRequest(req) {
   const h = Object.entries(req.headers).map(([key, value]) => ({ key, value }));
   headers.value = h.length ? h : [{ key: "", value: "" }];
   body.value = req.body || "";
-  response.value = null;
+  response.value = req.last_response || null;
   error.value = null;
 }
 
@@ -91,6 +96,7 @@ async function sendRequest() {
   response.value = null;
   try {
     const resp = await invoke("execute_request", {
+      id: selectedId.value || null,
       method: method.value,
       url: url.value,
       headers: headersToMap(),
@@ -126,7 +132,7 @@ function removeHeader(index) {
       :requests="requests"
       :selectedId="selectedId"
       @select="selectRequest"
-      @new="resetEditor"
+      @new="newRequest"
     />
 
     <main class="flex-1 flex flex-col overflow-y-auto p-5 gap-4 bg-bg-primary">
