@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
+import SecurityScanner from "./SecurityScanner.vue";
 import hljs from "highlight.js/lib/core";
 import json from "highlight.js/lib/languages/json";
 import xml from "highlight.js/lib/languages/xml";
@@ -63,6 +64,10 @@ const highlightedBody = computed(() => {
           :class="['px-3 py-1.5 text-xs uppercase tracking-wide transition-colors', activeTab === 'headers' ? 'text-accent border-b-2 border-accent' : 'text-gray-500 hover:text-gray-300']"
           @click="activeTab = 'headers'"
         >Headers</button>
+        <button
+          :class="['px-3 py-1.5 text-xs uppercase tracking-wide transition-colors', activeTab === 'security' ? 'text-accent border-b-2 border-accent' : 'text-gray-500 hover:text-gray-300']"
+          @click="activeTab = 'security'"
+        >Security</button>
       </div>
       <!-- Status bar -->
       <div class="flex items-center gap-4 mb-3">
@@ -81,11 +86,24 @@ const highlightedBody = computed(() => {
 
       <!-- Headers -->
       <div v-if="activeTab === 'headers'" class="text-xs font-mono space-y-0.5">
-        <div v-for="(v, k) in response.headers" :key="k" class="flex gap-2">
-          <span class="text-accent min-w-44">{{ k }}</span>
-          <span class="text-gray-500 break-all">{{ v }}</span>
-        </div>
+        <table class="table table-sm table-bordered">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(v, k) in response.headers" :key="k">
+              <td class="text-accent min-w-44">{{ k }}</td>
+              <td class="text-gray-500 break-all">{{ v }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
+      <!-- Security -->
+      <SecurityScanner v-if="activeTab === 'security'" :headers="response.headers" />
     </div>
   </div>
 
