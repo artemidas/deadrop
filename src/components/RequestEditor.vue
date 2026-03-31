@@ -14,6 +14,7 @@ const props = defineProps({
   url: String,
   headers: Array,
   body: String,
+  params: Array,
 });
 
 const emit = defineEmits([
@@ -21,6 +22,9 @@ const emit = defineEmits([
   "update-header",
   "add-header",
   "remove-header",
+  "update-param",
+  "add-param",
+  "remove-param",
 ]);
 
 const activeTab = ref("headers");
@@ -30,6 +34,7 @@ watch(() => props.method, () => {
     activeTab.value = "headers";
   }
 });
+
 const backdropRef = ref(null);
 
 const highlightedBody = computed(() => {
@@ -71,14 +76,25 @@ function syncScroll(e) {
     <!-- Tab Content -->
     <div class="flex-1 overflow-y-auto pt-3">
       <!-- Params -->
-      <div v-if="activeTab === 'params'" class="space-y-2 text-sm text-gray-500">
-        <div v-if="url && url.includes('?')" class="text-xs font-mono space-y-0.5">
-          <div v-for="param in url.split('?')[1]?.split('&') || []" :key="param" class="flex gap-2">
-            <span class="text-accent">{{ param.split('=')[0] }}</span>
-            <span class="text-gray-400">{{ decodeURIComponent(param.split('=')[1] || '') }}</span>
-          </div>
+      <div v-if="activeTab === 'params'" class="space-y-2">
+        <div v-for="(p, i) in params" :key="i" class="flex gap-2">
+          <input
+            class="input input-sm input-bordered flex-1 bg-bg-input border-border-main text-gray-200 font-mono"
+            :value="p.key"
+            placeholder="Key"
+            @input="emit('update-param', i, 'key', $event.target.value)"
+          />
+          <input
+            class="input input-sm input-bordered flex-1 bg-bg-input border-border-main text-gray-200 font-mono"
+            :value="p.value"
+            @input="emit('update-param', i, 'value', $event.target.value)"
+            placeholder="Value"
+          />
+          <button class="btn btn-sm btn-ghost text-gray-500 hover:text-red-400" @click="emit('remove-param', i)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
-        <p v-else class="text-xs italic">No query parameters</p>
+        <button class="btn btn-xs btn-ghost text-gray-500" @click="emit('add-param')">+ Add Param</button>
       </div>
 
       <!-- Headers -->

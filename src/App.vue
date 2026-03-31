@@ -13,6 +13,7 @@ const name = ref("New Request");
 const method = ref("GET");
 const url = ref("");
 const headers = ref([{ key: "", value: "" }]);
+const params = ref([{ key: "", value: "" }]);
 const body = ref("");
 const response = ref(null);
 const loading = ref(false);
@@ -33,6 +34,7 @@ function resetEditor() {
   method.value = "GET";
   url.value = "";
   headers.value = [{ key: "", value: "" }];
+  params.value = [{ key: "", value: "" }];
   body.value = "";
   response.value = null;
   error.value = null;
@@ -50,7 +52,9 @@ function selectRequest(req) {
   url.value = req.url;
   const h = Object.entries(req.headers).map(([key, value]) => ({ key, value }));
   headers.value = h.length ? h : [{ key: "", value: "" }];
-  body.value = req.body || "";
+  const p = Object.entries(req.params).map(([key, value]) => ({ key, value }));
+  params.value = p.length ? p : [{ key: "", value: "" }];
+  body.value = req.body || "";  
   response.value = req.last_response || null;
   error.value = null;
 }
@@ -63,6 +67,14 @@ function headersToMap() {
   return map;
 }
 
+function paramsToMap() {
+  const map = {};
+  for (const p of params.value) {
+    map[p.key] = p.value;
+  }
+  return map;
+}
+
 async function saveRequest() {
   try {
     const args = {
@@ -70,6 +82,7 @@ async function saveRequest() {
       method: method.value,
       url: url.value,
       headers: headersToMap(),
+      params: paramsToMap(),
       body: body.value || null,
     };
     if (selectedId.value) {
@@ -101,6 +114,7 @@ async function sendRequest() {
       method: method.value,
       url: url.value,
       headers: headersToMap(),
+      params: paramsToMap(),
       body: body.value || null,
     });
     response.value = resp;
@@ -109,6 +123,18 @@ async function sendRequest() {
   } finally {
     loading.value = false;
   }
+}
+
+function updateParam(index, field, value) {
+  params.value[index][field] = value;
+}
+
+function addParam() {
+  params.value.push({ key: "", value: "" });
+}
+
+function removeParam(index) {
+  params.value.splice(index, 1);
 }
 
 function updateHeader(index, field, value) {
@@ -143,6 +169,7 @@ function removeHeader(index) {
         v-model:name="name"
         v-model:method="method"
         v-model:url="url"
+        v-model:params="params"
         :loading="loading"
         @save="saveRequest"
         @delete="deleteRequest"
@@ -158,12 +185,15 @@ function removeHeader(index) {
         <div class="flex-1 min-w-0 overflow-hidden">
           <RequestEditor
             :method="method"
-            :url="url"
             :headers="headers"
+            :params="params"
             v-model:body="body"
             @update-header="updateHeader"
             @add-header="addHeader"
             @remove-header="removeHeader"
+            @update-param="updateParam"
+            @add-param="addParam"
+            @remove-param="removeParam"
           />
         </div>
         <div class="flex-1 min-w-0 overflow-hidden border-l border-border-main pl-4">

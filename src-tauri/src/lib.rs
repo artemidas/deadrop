@@ -13,6 +13,8 @@ pub struct SavedRequest {
     pub method: String,
     pub url: String,
     pub headers: HashMap<String, String>,
+    #[serde(default)]
+    pub params: HashMap<String, String>,
     pub body: Option<String>,
     pub last_response: Option<HttpResponse>,
     pub created_at: u64,
@@ -78,6 +80,7 @@ async fn create_request(
     method: String,
     url: String,
     headers: HashMap<String, String>,
+    params: HashMap<String, String>,
     body: Option<String>,
 ) -> Result<SavedRequest, String> {
     let mut store = load_store(&app)?;
@@ -88,6 +91,7 @@ async fn create_request(
         method,
         url,
         headers,
+        params,
         body,
         last_response: None,
         created_at: now,
@@ -106,6 +110,7 @@ async fn update_request(
     method: String,
     url: String,
     headers: HashMap<String, String>,
+    params: HashMap<String, String>,
     body: Option<String>,
 ) -> Result<SavedRequest, String> {
     let mut store = load_store(&app)?;
@@ -118,6 +123,7 @@ async fn update_request(
     req.method = method;
     req.url = url;
     req.headers = headers;
+    req.params = params;
     req.body = body;
     req.updated_at = now_ms();
     let updated = req.clone();
@@ -144,6 +150,7 @@ async fn execute_request(
     method: String,
     url: String,
     headers: HashMap<String, String>,
+    params: HashMap<String, String>,
     body: Option<String>,
 ) -> Result<HttpResponse, String> {
     let client = Client::builder()
@@ -155,6 +162,14 @@ async fn execute_request(
     let method: reqwest::Method = method.parse().map_err(|_| "Invalid HTTP method")?;
 
     let mut req_builder = client.request(method, &url);
+
+    let query_params: Vec<(&String, &String)> = params
+        .iter()
+        .filter(|(k, _)| !k.is_empty())
+        .collect();
+    if !query_params.is_empty() {
+        req_builder = req_builder.query(&query_params);
+    }
 
     for (k, v) in &headers {
         if !k.is_empty() {
